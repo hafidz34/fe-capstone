@@ -31,7 +31,7 @@ export default function Navbar() {
     <nav className="bg-blue-900 p-4 flex justify-between items-center">
       <ul className="flex space-x-4 items-center">
         <li><Link to="/" className="text-white">Upload</Link></li>
-        <li><Link to="/about" className="text-white">Dashboard</Link></li>
+        <li><Link to="/dashboard" className="text-white">Dashboard</Link></li>
         <li><Link to="/services" className="text-white">Archive</Link></li>
       </ul>
 
