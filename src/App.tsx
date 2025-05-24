@@ -15,10 +15,10 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
-          path="/upload"
+          path="/" // ini seharusnya gk diganti karena abis login kan hal upload
           element={
             <PrivateRoute>
-              <Upload /> 
+              <Upload /*ini disesuain */ /> 
             </PrivateRoute>
           }
         />
@@ -34,7 +34,7 @@ export default function App() {
           path="/archive"
           element={
             <PrivateRoute>
-              <Archive />
+              <Archive /*ini disesuain */ />
             </PrivateRoute>
           }
         />
