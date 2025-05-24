@@ -1,10 +1,9 @@
-import FileManager from "../components/FileManager";
+import Excelchart from "../components/Excelchart";
 
 export default function Dashboard() {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-4xl font-bold mb-4">Dashboard</h1>
-      <FileManager />
+    <div className="min-h-screen bg-gray-200 flex flex-col items-center justify-center p-4">
+      <Excelchart />
     </div>
   );
 }
