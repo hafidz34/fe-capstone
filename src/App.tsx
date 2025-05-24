@@ -15,7 +15,15 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
-          path="/"
+          path="/upload"
+          element={
+            <PrivateRoute>
+              <Upload /> 
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
           element={
             <PrivateRoute>
               <Dashboard />
@@ -23,26 +31,10 @@ export default function App() {
           }
         />
         <Route
-          path="/about"
+          path="/archive"
           element={
             <PrivateRoute>
-              <About />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/services"
-          element={
-            <PrivateRoute>
-              <Services />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/contact"
-          element={
-            <PrivateRoute>
-              <Contact />
+              <Archive />
             </PrivateRoute>
           }
         />
