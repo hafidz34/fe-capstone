@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
-  PieChart, Pie, Cell, LineChart, Line
+  PieChart, Pie, Cell
 } from 'recharts';
 
 interface DataRow {
@@ -39,10 +39,8 @@ const darkenColor = (color: string, amount: number) => {
   return (usePound ? '#' : '') + newColor.toString(16).padStart(6, '0');
 };
 
-// fileName biarin aja
 const ExcelChart: React.FC = () => {
   const [data, setData] = useState<DataRow[]>([]);
-  const [historyData, setHistoryData] = useState<{ name: string; percentage: number }[]>([]);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [fileName, setFileName] = useState<string>('');
 
@@ -95,30 +93,7 @@ const ExcelChart: React.FC = () => {
       }
     };
 
-    const fetchHistory = async () => {
-      try {
-        const res = await fetch("http://localhost:8000/api/data/all", {
-          headers: {
-            Authorization: localStorage.getItem("token") || "",
-          },
-        });
-
-        const json = await res.json();
-        const all = json.map((entry: any) => {
-          const sheet = entry.data.find((s: any) => s.name === "KESELURUHAN (OTOMATIS)");
-          if (!sheet || !sheet.data?.length) return null;
-          const avg = sheet.data.reduce((acc: number, row: any) => acc + (+row.Persentase || 0), 0) / sheet.data.length;
-          return { name: `[${entry.year}]`, percentage: avg };
-        }).filter(Boolean);
-
-        setHistoryData(all);
-      } catch (err) {
-        console.error("Failed to fetch history:", err);
-      }
-    };
-
     fetchData();
-    fetchHistory();
   }, []);
 
   const pieData = [...data].sort((a, b) => b.Total - a.Total).map(item => ({
@@ -128,11 +103,14 @@ const ExcelChart: React.FC = () => {
 
   const onPieEnter = (_: any, index: number) => setActiveIndex(index);
   const onPieLeave = () => setActiveIndex(null);
+  const lastData = data.slice(0);
+  const avgPercentage =
+  lastData.reduce((sum, item) => sum + item.Persentase, 0) / lastData.length || 0;
+  const historyData = avgPercentage
 
   return (
     <div style={{ padding: 20 }}>
-      <h2 style={{ marginBottom: 16 }}>Grafik Data</h2>
-
+      <h2 style={{ marginBottom: 16, fontSize: '24px', fontWeight: 'bold' }}>Grafik Data</h2>
       {data.length > 0 && (
         <div style={{
           display: 'flex',
@@ -143,7 +121,7 @@ const ExcelChart: React.FC = () => {
           maxWidth: '100%'
         }}>
           <div style={{ flex: '1 1 350px', minWidth: 360, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: 14, marginBottom: 6 }}>Chart Pencapaian vs Target</h3>
+            <h3 style={{ fontSize: 14, marginBottom: 6 ,color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold'}}>Total Pencapaian vs Target</h3>
             <BarChart width={350} height={350} data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="Indikator" tick={false} />
@@ -156,7 +134,7 @@ const ExcelChart: React.FC = () => {
           </div>
 
           <div style={{ flex: '0 0 350px', minWidth: 370, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: 14, marginBottom: 6 }}>Pencapaian Semua Indikator</h3>
+            <h3 style={{ fontSize: 14, marginBottom: 6 ,color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold'}}>Pencapaian Semua Indikator</h3>
             <PieChart width={350} height={350}>
               <Pie
                 data={pieData}
@@ -193,7 +171,7 @@ const ExcelChart: React.FC = () => {
           </div>
 
           <div style={{ flex: '1 1 350px', minWidth: 370, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)'}}>
-            <h3 style={{ fontSize: 14, marginBottom: 6 }}>Persentase Pencapaian</h3>
+            <h3 style={{ fontSize: 14, marginBottom: 6 ,color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold'}}>Persentase Pencapaian</h3>
             <BarChart width={350} height={350} data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="Indikator" tick={false} />
@@ -203,20 +181,11 @@ const ExcelChart: React.FC = () => {
               <Legend wrapperStyle={{ fontSize: 12 }} />
             </BarChart>
           </div>
-
-          <div style={{ flex: '1 1 100%', minWidth: 350, marginTop: 20, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: 14, marginBottom: 6 }}>Riwayat Rata-rata Pencapaian</h3>
-            <LineChart width={700} height={300} data={historyData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" tick={false} />
-              <YAxis tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} domain={[0, 1]} />
-              <Tooltip formatter={(v: number) => `${(v * 100).toFixed(2)}%`} />
-              <Legend />
-              <Line type="monotone" dataKey="percentage" stroke="#8884d8" activeDot={{ r: 8 }} />
-            </LineChart>
-          </div>
         </div>
       )}
+      <h2 style={{ marginTop: 16, width : 250, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+        Rata-rata Pencapaian : {(historyData * 100).toFixed(2)}%
+      </h2>
     </div>
   );
 };
