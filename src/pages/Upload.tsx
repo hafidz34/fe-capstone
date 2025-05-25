@@ -8,7 +8,7 @@ export default function Upload() {
     <div className="flex justify-center items-center min-h-screen">
       <FileUploadButton
       onFilesSelected={handleFilesSelected}
-      uploadUrl="/api/data/upload"
+      uploadUrl="http://localhost:8000/api/data/upload"
       />
     </div>
   );
