@@ -1,8 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Services from "./pages/Services";
+import Upload from "./pages/Upload";
+import Archive from "./pages/Archive";
 import Login from "./pages/Login";
 import PrivateRoute from "./components/PrivateRoute";
 import "./App.css";
