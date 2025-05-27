@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import type { ChangeEvent } from "react";
 import { useRef } from "react";
 
@@ -6,6 +7,7 @@ interface FileUploadButtonProps {
   accept?: string;
   multiple?: boolean;
   uploadUrl?: string; // URL to upload files
+  onUploadSuccess?: () => void;
 }
 
 const FileUploadButton = ({
@@ -13,8 +15,10 @@ const FileUploadButton = ({
   accept = ".xlsx,.xls",
   multiple = true,
   uploadUrl,
+  onUploadSuccess = () => {}, // default
 }: FileUploadButtonProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const handleClick = () => {
     fileInputRef.current?.click();
@@ -29,21 +33,41 @@ const FileUploadButton = ({
         try {
           const formData = new FormData();
           for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i]);
+            formData.append("file", files[i]);
           }
 
           const response = await fetch(uploadUrl, {
             method: "POST",
+            headers: {
+              Authorization: localStorage.getItem("token") || "", 
+            },
             body: formData,
           });
 
-          if (!response.ok) {
-            console.error("Upload failed:", response.statusText);
-          } else {
-            console.log("Files uploaded successfully");
+          console.log("Upload response status:", response.status);
+          const text = await response.text();
+          console.log("Upload response body:", text);
+
+          if (response.ok) {
+          onUploadSuccess();
+          alert("Upload berhasil!");
+          const match = files[0].name.match(/\[(\d{4})\]/);
+          if (match) {
+            const year = match[1];
+            localStorage.setItem("selectedYear", year);
+            const years = JSON.parse(localStorage.getItem("availableYears") || "[]");
+            if (!years.includes(year)) {
+              years.push(year);
+              localStorage.setItem("availableYears", JSON.stringify(years));
           }
-        } catch (error) {
-          console.error("Error uploading files:", error);
+        }
+          navigate("/dashboard");
+        } else {
+           console.error("Upload failed");
+           alert("Upload gagal!");
+        }
+        } catch (err) {
+          console.error("Error uploading files:", err);
         }
       }
     }
