@@ -17,7 +17,7 @@ export default function App() {
           path="/" // ini seharusnya gk diganti karena abis login kan hal upload
           element={
             <PrivateRoute>
-              <Upload /*ini disesuain */ /> 
+              <Upload /> 
             </PrivateRoute>
           }
         />
