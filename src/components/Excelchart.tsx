@@ -63,6 +63,7 @@ const ExcelChart: React.FC = () => {
           throw new Error("Response is not an array");
         }
         
+        years.sort((a, b) => Number(a.year) - Number(b.year));
         setAvailableYears(years);
 
         // Tambahan: Ambil semua rata-rata untuk line chart
