@@ -87,7 +87,7 @@ export default function FileManager() {
                   className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2">{idx + 1}</td>
                   <td className="px-4 py-2">{file.year}</td>
-                  <td className="px-4 py-2">{`[${file.year} REKAPITULASI.xlsx]`}</td>
+                  <td className="px-4 py-2">{`[${file.year}] REKAPITULASI.xlsx`}</td>
                   <td className="px-4 py-2">
                     <button
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"
