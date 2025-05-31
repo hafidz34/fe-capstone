@@ -15,7 +15,7 @@ export default function FileManager() {
       setFiles([]);
       return;
     }
-    fetch("http://localhost:8000/api/data/years", {
+    fetch("http://localhost:8000/api/data", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(async (res) => {
@@ -70,7 +70,6 @@ export default function FileManager() {
               <th className="px-4 py-2 text-left">No</th>
               <th className="px-4 py-2 text-left">Tahun</th>
               <th className="px-4 py-2 text-left">Nama File</th>
-              <th className="px-4 py-2 text-left">Uploaded By</th>
               <th className="px-4 py-2 text-left">Aksi</th>
             </tr>
           </thead>
@@ -88,8 +87,7 @@ export default function FileManager() {
                   className="border-t hover:bg-gray-50 transition">
                   <td className="px-4 py-2">{idx + 1}</td>
                   <td className="px-4 py-2">{file.year}</td>
-                  <td className="px-4 py-2">{file.filename}</td>
-                  <td className="px-4 py-2">-</td>
+                  <td className="px-4 py-2">{`[${file.year} REKAPITULASI.xlsx]`}</td>
                   <td className="px-4 py-2">
                     <button
                       className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition"

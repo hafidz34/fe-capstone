@@ -15,7 +15,7 @@ interface NavbarProps {
 
 export default function Navbar({ sidebarOpen, setSidebarOpen }: NavbarProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem("isAuthenticated") === "true"
+    localStorage.getItem("token") !== null
   );
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const navigate = useNavigate();
