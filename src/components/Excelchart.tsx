@@ -45,46 +45,61 @@ const ExcelChart: React.FC = () => {
   const [year, setYear] = useState(() =>
     localStorage.getItem("selectedYear") || new Date().getFullYear().toString()
   );
-  const [availableYears, setAvailableYears] = useState<string[]>([]);
+  const [availableYears, setAvailableYears] = useState<{ year: string }[]>([]);
   const [historyChartData, setHistoryChartData] = useState<{ year: string, avg: number }[]>([]);
 
   useEffect(() => {
-    const years = JSON.parse(localStorage.getItem("availableYears") || "[]");
-    setAvailableYears(years);
+    const fetchAvailableYears = async () => {
+      try {
+        const res = await fetch("http://localhost:8000/api/data", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
+          },
+        });
+        const years = await res.json();
+        console.log("Available years:", years);
 
-    const fetchAverages = async () => {
-      const list = [];
-      for (const y of years) {
-        try {
-          const res = await fetch(`http://localhost:8000/api/data/${y}`, {
-            headers: { Authorization: localStorage.getItem("token") || "" },
-          });
-          const json = await res.json();
-          const sheet = json[0]?.data.find((s: any) => s.name === "KESELURUHAN (OTOMATIS)");
-          if (!sheet) continue;
-          const avg = sheet.data.reduce((sum: number, row: any) => sum + Number(row.Persentase || 0), 0) / sheet.data.length;
-          list.push({ year: y, avg });
-        } catch (err) {
-          console.error("Fetch error:", err);
+        if (!Array.isArray(years)) {
+          throw new Error("Response is not an array");
         }
+        
+        setAvailableYears(years);
+
+        // Tambahan: Ambil semua rata-rata untuk line chart
+        const list = [];
+        for (const y of years) {
+          const yearVal = y.year || y;
+          const res = await fetch(`http://localhost:8000/api/data/${yearVal}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem("token") || ""}`,},
+        });
+        const json = await res.json();
+        const sheet = json[0]?.data.find((s: any) => s.name === "KESELURUHAN (OTOMATIS)");
+        if (!sheet) continue;
+        const avg = sheet.data.reduce((sum: number, row: any) => sum + Number(row.Persentase || 0), 0) / sheet.data.length;
+        list.push({ year: String(yearVal), avg });
       }
       setHistoryChartData(list);
-    };
+    } catch (err) {
+      console.error("Error fetching years or averages:", err);
+    }
+  };
 
-    fetchAverages();
-  }, []);
+  fetchAvailableYears();
+}, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const res = await fetch(`http://localhost:8000/api/data/${year}`, {
           headers: {
-            Authorization: localStorage.getItem("token") || "",
+            Authorization: `Bearer ${localStorage.getItem("token") || ""}`,
           },
         });
 
         if (!res.ok) throw new Error(`Status ${res.status}`);
         const json = await res.json();
+
+        console.log("Data response:", json);
 
         const sheet = json[0]?.data.find((s: any) => s.name === "KESELURUHAN (OTOMATIS)");
         if (!sheet) return;
@@ -135,8 +150,10 @@ const ExcelChart: React.FC = () => {
               localStorage.setItem("selectedYear", e.target.value);
             }}
           >
-            {availableYears.map((y) => (
-              <option key={y} value={y}>{y}</option>
+            {availableYears.map((yobj) => (
+              <option key={yobj.year} value={yobj.year}>
+                {yobj.year}
+                </option>
             ))}
           </select>
         </div>
@@ -145,16 +162,16 @@ const ExcelChart: React.FC = () => {
       {data.length > 0 && (
         <div style={{
           display: 'flex',
-          gap: 40,
           flexWrap: 'wrap',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          maxWidth: '100%'
+          gap: 25,
+          justifyContent: 'center',
+          paddingBottom: 12,
+          marginBottom: 20
         }}>
           {/* BarChart Total vs Target */}
-          <div style={{ flex: '1 1 350px', minWidth: 360, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+          <div style={{ flex: '1 1 350px', maxWidth: 330, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <h3 style={{ fontSize: 14, marginBottom: 6, color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>Total Pencapaian vs Target</h3>
-            <BarChart width={350} height={350} data={data}>
+            <BarChart width={300} height={300} data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="Indikator" tick={false} />
               <YAxis />
@@ -166,9 +183,9 @@ const ExcelChart: React.FC = () => {
           </div>
 
           {/* Pie Chart */}
-          <div style={{ flex: '0 0 350px', minWidth: 370, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+          <div style={{ flex: '0 0 350px', maxWidth: 330, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
             <h3 style={{ fontSize: 14, marginBottom: 6, color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>Pencapaian Semua Indikator</h3>
-            <PieChart width={350} height={350}>
+            <PieChart width={300} height={300}>
               <Pie
                 data={pieData}
                 dataKey="value"
@@ -204,9 +221,9 @@ const ExcelChart: React.FC = () => {
           </div>
 
           {/* BarChart Persentase */}
-          <div style={{ flex: '1 1 350px', minWidth: 370, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
-            <h3 style={{ fontSize: 16, marginBottom: 6, color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>Persentase Pencapaian</h3>
-            <BarChart width={350} height={350} data={data}>
+          <div style={{ flex: '1 1 350px', maxWidth: 330, backgroundColor: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 6px rgba(0,0,0,0.1)' }}>
+            <h3 style={{ fontSize: 14, marginBottom: 6, color: '#4B32C3', fontFamily: 'Poppins, sans-serif', fontWeight: 'bold' }}>Persentase Pencapaian</h3>
+            <BarChart width={300} height={300} data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="Indikator" tick={false} />
               <YAxis tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} domain={[0, 1]} />
@@ -225,7 +242,7 @@ const ExcelChart: React.FC = () => {
         borderRadius: 20,
         padding: 16,
         boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-        width: 780
+        width: 680
       }}>
         <h3 style={{
           fontSize: 16,
@@ -234,7 +251,7 @@ const ExcelChart: React.FC = () => {
           fontFamily: 'Poppins, sans-serif',
           color: '#4B32C3'
         }}>Riwayat Rata-rata Pencapaian</h3>
-        <LineChart width={700} height={300} data={historyChartData}>
+        <LineChart width={600} height={300} data={historyChartData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="year" />
           <YAxis tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
